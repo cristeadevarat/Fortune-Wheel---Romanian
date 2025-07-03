@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin & Win - Fortune Wheel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #00a8ff, #0066cc);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .title {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #0066cc;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            border: 3px solid #fff;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            to { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 0 auto 30px;
+        }
+
+        svg {
+            transform: rotate(0deg);
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); 
+            border-radius: 50%;
+            border: 8px solid #fff;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #ffd700;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            border-radius: 50%;
+            z-index: 5;
+            border: 4px solid #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .spin-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a5a);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(238, 90, 90, 0.4);
+            margin: 20px;
+        }
+
+        .spin-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(238, 90, 90, 0.6);
+        }
+
+        .spin-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .prize-announcement {
+            font-size: 24px;
+            color: #0066cc;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .prize-name {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #0066cc;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 15px 0;
+            display: inline-block;
+        }
+
+        .form-group {
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, #00b894, #00a085);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+        }
+
+        .close-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .close-btn:hover {
+            background: #5a6268;
+        }
+
+        .success-message {
+            display: none;
+            background: linear-gradient(45deg, #00b894, #00a085);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        @media (max-width: 480px) {
+            .wheel-container {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .title {
+                font-size: 20px;
+                padding: 12px 25px;
+            }
+            
+            .modal-content {
+                margin: 20% auto;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">🎯 SPIN & WIN 🎯</div>
+        
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <svg id="wheel" width="400" height="400" viewBox="0 0 400 400">
+            </svg>
+            <div class="center-circle"></div>
+        </div>
+
+        <button class="spin-btn" id="spinBtn">🎰 ÎNVÂRTE ROATA 🎰</button>
+        
+        <div class="footer">FORTUNE WHEEL</div>
+    </div>
+
+    <div id="prizeModal" class="modal">
+        <div class="modal-content">
+            <div class="prize-announcement">🎉 Felicitări! Ai câștigat: 🎉</div>
+            <div class="prize-name" id="prizeName"></div>
+            
+            <form id="claimForm">
+                <div class="form-group">
+                    <label for="userName">Numele tău:</label>
+                    <input type="text" id="userName" name="name" required placeholder="Introdu numele tău">
+                </div>
+                
+                <div class="form-group">
+                    <label for="userEmail">Adresa de email:</label>
+                    <input type="email" id="userEmail" name="email" required placeholder="exemplu@email.com">
+                </div>
+                
+                <div style="margin-top: 25px;">
+                    <button type="submit" class="submit-btn">📧 REVENDICĂ PREMIUL</button>
+                    <button type="button" class="close-btn" onclick="closeModal()">❌ ÎNCHIDE</button>
+                </div>
+            </form>
+            
+            <div class="success-message" id="successMessage">
+                ✅ Mulțumim! Datele tale au fost salvate cu succes. Vei fi contactat în curând!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const prizes = [
+            { name: 'Premiu', color: '#FFC0CB' },
+            { name: 'Cadou Special', color: '#ADD8E6' },
+            { name: 'Voucher De Reducere', color: '#90EE90' },
+            { name: 'Experiență Unică Și Frumoasă', color: '#FFFF00' },
+            { name: 'Pachet Vacanță All Inclusive Perfect', color: '#FFA070' },
+            { name: 'Telefon Smartphone Nou Cu Accesorii Complete', color: '#DA70D6' },
+            { name: 'Curs Online Profesional De Dezvoltare Personală Acreditat', color: '#87CEEB' },
+            { name: 'Servicii Spa Relaxante Pentru Două Persoane Cu Masaj', color: '#CD5C5C' },
+            { name: 'Echipament Sportiv Complet Pentru Antrenamente De Înaltă Performanță Profesional', color: '#F0E68C' },
+            { name: 'Abonament Anual Complet La Toate Serviciile Premium De Streaming Video', color: '#C0C0C0' }
+        ];
+        
+        const centerX = 200, centerY = 200, radius = 200;
+        const svg = document.getElementById("wheel");
+        let currentNormalizedRotation = 0; 
+        let spinning = false;
+
+        function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+            const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+            return {
+                x: centerX + radius * Math.cos(angleInRadians),
+                y: centerY + radius * Math.sin(angleInRadians)
+            };
+        }
+
+        function describeArc(x, y, radius, startAngle, endAngle) {
+            const startPoint = polarToCartesian(x, y, radius, startAngle);
+            const endPoint = polarToCartesian(x, y, radius, endAngle);
+
+            const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+            const sweepFlag = 1;
+
+            return [
+                "M", x, y,
+                "L", startPoint.x, startPoint.y,
+                "A", radius, radius, 0, largeArcFlag, sweepFlag, endPoint.x, endPoint.y,
+                "Z"
+            ].join(" ");
+        }
+
+        function wrapText(text, maxCharsPerLine) {
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = '';
+
+            for (let i = 0; i < words.length; i++) {
+                const testLine = currentLine + (currentLine ? ' ' : '') + words[i];
+                if (testLine.length > maxCharsPerLine && currentLine !== '') {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            if (currentLine) {
+                lines.push(currentLine);
+            }
+            return lines;
+        }
+
+        function generateSVGWheel() {
+            svg.innerHTML = '';
+
+            const angle = 360 / prizes.length;
+            prizes.forEach((prize, i) => {
+                const startAngle = i * angle;
+                const endAngle = (i + 1) * angle;
+
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", describeArc(centerX, centerY, radius, startAngle, endAngle));
+                path.setAttribute("fill", prize.color);
+                path.setAttribute("stroke", "#fff");
+                path.setAttribute("stroke-width", "2");
+                svg.appendChild(path);
+
+                const textAngle = startAngle + angle / 2;
+                const textRadius = radius * 0.6;
+                
+                const textX = centerX + textRadius * Math.cos((textAngle - 90) * Math.PI / 180);
+                const textY = centerY + textRadius * Math.sin((textAngle - 90) * Math.PI / 180);
+
+                const wordCount = prize.name.split(' ').length;
+                let fontSize, maxCharsPerLine;
+                
+                if (wordCount <= 2) {
+                    fontSize = 14;
+                    maxCharsPerLine = 12;
+                } else if (wordCount <= 4) {
+                    fontSize = 11;
+                    maxCharsPerLine = 10;
+                } else if (wordCount <= 6) {
+                    fontSize = 9;
+                    maxCharsPerLine = 8;
+                } else {
+                    fontSize = 7;
+                    maxCharsPerLine = 6;
+                }
+
+                const lines = wrapText(prize.name, maxCharsPerLine);
+                
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("fill", "#000");
+                text.setAttribute("font-size", `${fontSize}px`);
+                text.setAttribute("font-weight", "bold");
+                text.setAttribute("text-anchor", "middle");
+                text.setAttribute("dominant-baseline", "middle");
+                text.setAttribute("transform", `rotate(${textAngle}, ${textX}, ${textY})`);
+                text.setAttribute("x", textX);
+                text.setAttribute("y", textY);
+
+                const lineHeight = fontSize * 1.2;
+                const startY = textY - ((lines.length - 1) * lineHeight) / 2;
+                
+                lines.forEach((line, lineIndex) => {
+                    const tspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+                    tspan.textContent = line;
+                    tspan.setAttribute("x", textX);
+                    tspan.setAttribute("y", startY + (lineIndex * lineHeight));
+                    text.appendChild(tspan);
+                });
+
+                svg.appendChild(text);
+            });
+        }
+
+        function spinWheel() {
+            if (spinning) return;
+            
+            spinning = true;
+            const spinBtn = document.getElementById('spinBtn');
+            spinBtn.disabled = true;
+            spinBtn.textContent = '🎰 SE ÎNVÂRTE...';
+            
+            const numPrizes = prizes.length;
+            const sectionAngle = 360 / numPrizes;
+
+            const winnerIndex = Math.floor(Math.random() * numPrizes);
+            const winner = prizes[winnerIndex]; 
+
+            let targetAngleForWinner = winnerIndex * sectionAngle + sectionAngle / 2;
+            let finalNormalizedRotationTarget = (360 - targetAngleForWinner) % 360;
+
+            const minFullRotations = 5;
+            const maxFullRotations = 8;
+            const fullRotations = Math.floor(Math.random() * (maxFullRotations - minFullRotations + 1)) + minFullRotations;
+            
+            let rotationDifference = (finalNormalizedRotationTarget - currentNormalizedRotation + 360) % 360;
+
+            const totalAnimationRotation = currentNormalizedRotation + (fullRotations * 360) + rotationDifference;
+
+            svg.style.transition = 'none'; 
+            svg.style.transform = `rotate(${currentNormalizedRotation}deg)`;
+            
+            requestAnimationFrame(() => { 
+                requestAnimationFrame(() => { 
+                    svg.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+                    svg.style.transform = `rotate(${totalAnimationRotation}deg)`;
+                });
+            });
+
+            currentNormalizedRotation = finalNormalizedRotationTarget; 
+
+            setTimeout(() => {
+                showPrizeModal(winner); 
+                spinning = false;
+                spinBtn.disabled = false;
+                spinBtn.textContent = '🎰 ÎNVÂRTE ROATA 🎰';
+            }, 4000); 
+        }
+
+        function showPrizeModal(prize) {
+            document.getElementById('prizeName').textContent = prize.name;
+            document.getElementById('prizeModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('prizeModal').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('claimForm').style.display = 'block';
+            document.getElementById('claimForm').reset(); 
+        }
+
+        document.getElementById('claimForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            formData.append('prize', document.getElementById('prizeName').textContent);
+            formData.append('timestamp', new Date().toISOString());
+            
+            fetch('save_winner.php', { 
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('claimForm').style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'block';
+                    
+                    setTimeout(() => {
+                        closeModal();
+                    }, 3000);
+                } else {
+                    alert('A apărut o eroare la salvarea datelor: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('A apărut o eroare la trimiterea datelor. Verifică consola browserului pentru detalii și asigură-te că rulezi de pe http://localhost.');
+            });
+        });
+
+        document.getElementById("spinBtn").addEventListener("click", spinWheel);
+
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('prizeModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        generateSVGWheel(); 
+    </script>
+</body>
+</html>
