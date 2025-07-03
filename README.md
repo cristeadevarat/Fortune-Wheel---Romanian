@@ -1,6 +1,5 @@
 # Fortune-Wheel---Romanian
 A simple and interactive Fortune Wheel (Spin &amp; Win) web application. Built with HTML, CSS, and JavaScript for the frontend, and PHP for handling prize claim submissions to a database.
-Pentru un fișier `README.md` complet și util pentru repository-ul tău GitHub, poți include următoarele secțiuni. Am compilat informațiile pe baza fișierelor tale:
 
 ````markdown
 # Spin & Win - Fortune Wheel
